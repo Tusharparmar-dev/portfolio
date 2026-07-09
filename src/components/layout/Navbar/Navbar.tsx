@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -22,8 +22,25 @@ export function Navbar() {
             ? scrollActiveId
             : NAV_LINKS.find((l) => l.href === pathname)?.id ?? "";
     const shouldReduceMotion = useReducedMotion();
+    const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
     const closeMenu = useCallback(() => setIsOpen(false), []);
+
+    // Keyboard accessibility: Escape closes the mobile menu and returns focus
+    // to the trigger, so keyboard users never lose their place.
+    useEffect(() => {
+        if (!isOpen) return;
+
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                setIsOpen(false);
+                toggleButtonRef.current?.focus();
+            }
+        }
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen]);
 
     return (
         <motion.header
@@ -42,15 +59,33 @@ export function Navbar() {
                 )}
             >
                 <nav
-                    className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8"
+                    className={cn(
+                        "mx-auto flex max-w-7xl items-center justify-between px-5 transition-[padding] duration-300 sm:px-6 lg:px-8",
+                        isScrolled ? "py-2.5" : "py-4"
+                    )}
                     aria-label="Primary navigation"
                 >
                     <Link
                         href="/"
-                        className="rounded-sm text-lg font-semibold tracking-tight text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 dark:text-white dark:focus-visible:ring-white"
+                        className="group rounded-sm text-lg font-semibold tracking-tight text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 dark:text-white dark:focus-visible:ring-white"
                         aria-label="Tushar Parmar, go to home"
                     >
-                        Tushar<span className="text-neutral-400">.dev</span>
+                        <motion.span
+                            className={cn(
+                                "inline-block transition-transform duration-300",
+                                isScrolled ? "scale-95" : "scale-100"
+                            )}
+                            whileHover={shouldReduceMotion ? undefined : { scale: 1.04 }}
+                            whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                        >
+                            <span
+                                className="bg-[linear-gradient(90deg,currentColor,currentColor)] bg-clip-text bg-[length:200%_100%] bg-right transition-[background-position,background-image] duration-500 ease-out group-hover:bg-[image:linear-gradient(90deg,var(--color-primary),var(--color-accent))] group-hover:bg-left"
+                            >
+                                Tushar
+                            </span>
+                            <span className="text-neutral-400">.dev</span>
+                        </motion.span>
                     </Link>
 
                     <DesktopNav activeId={activeId} />
@@ -77,14 +112,19 @@ export function Navbar() {
                         <Link
                             href={SOCIAL_LINKS.resume}
                             download
-                            className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 dark:bg-white dark:text-neutral-900 dark:focus-visible:ring-white"
+                            className="group/cta relative ml-2 inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-[1.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 dark:bg-white dark:text-neutral-900 dark:focus-visible:ring-white"
                         >
-                            Resume
-                            <Download size={15} strokeWidth={2} />
+                            <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.35),transparent)] transition-transform duration-700 ease-out group-hover/cta:translate-x-full dark:bg-[linear-gradient(110deg,transparent,rgba(0,0,0,0.15),transparent)]"
+                            />
+                            <span className="relative">Resume</span>
+                            <Download size={15} strokeWidth={2} className="relative" />
                         </Link>
                     </div>
 
                     <button
+                        ref={toggleButtonRef}
                         type="button"
                         onClick={() => setIsOpen((prev) => !prev)}
                         className="inline-flex items-center justify-center rounded-full p-2 text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:text-white dark:focus-visible:ring-white lg:hidden"
@@ -118,12 +158,12 @@ export function Navbar() {
                             )}
                         </AnimatePresence>
                     </button>
-                </nav >
-            </div >
+                </nav>
+            </div>
 
             <AnimatePresence>
                 {isOpen && <MobileMenu activeId={activeId} onLinkClick={closeMenu} />}
             </AnimatePresence>
-        </motion.header >
+        </motion.header>
     );
 }

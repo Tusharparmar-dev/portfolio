@@ -90,9 +90,9 @@ export function MobileMenu({ activeId, onLinkClick }: MobileMenuProps) {
                     className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white"
                 >
                     Resume
-                    < Download size={15} strokeWidth={2} />
-                </Link >
-            </motion.div >
-        </motion.div >
+                    <Download size={15} strokeWidth={2} />
+                </Link>
+            </motion.div>
+        </motion.div>
     );
 }

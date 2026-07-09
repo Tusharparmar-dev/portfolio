@@ -15,7 +15,7 @@ export function DesktopNav({ activeId }: DesktopNavProps) {
             {NAV_LINKS.map((link) => {
                 const isActive = activeId === link.id;
                 return (
-                    <li key={link.id} className="relative">
+                    <li key={link.id} className="group relative">
                         <Link
                             href={link.href}
                             className={cn(
@@ -34,6 +34,12 @@ export function DesktopNav({ activeId }: DesktopNavProps) {
                                 />
                             )}
                             {link.label}
+                            {!isActive && (
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-x-4 -bottom-0.5 h-px origin-center scale-x-0 bg-[linear-gradient(90deg,var(--color-primary),var(--color-accent))] transition-transform duration-300 ease-out group-hover:scale-x-100"
+                                />
+                            )}
                         </Link>
                     </li>
                 );
